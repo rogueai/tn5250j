@@ -25,7 +25,14 @@
  */
 package org.tn5250j.framework.tn5250;
 
-import static org.tn5250j.TN5250jConstants.*;
+import org.tn5250j.TN5250jConstants;
+import org.tn5250j.event.GraphicsListener;
+import org.tn5250j.event.ScreenListener;
+import org.tn5250j.event.order.IGraphicOrder;
+import org.tn5250j.keyboard.KeyMnemonic;
+import org.tn5250j.keyboard.KeyMnemonicResolver;
+import org.tn5250j.tools.logging.TN5250jLogFactory;
+import org.tn5250j.tools.logging.TN5250jLogger;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -33,12 +40,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Vector;
 
-import org.tn5250j.TN5250jConstants;
-import org.tn5250j.event.ScreenListener;
-import org.tn5250j.keyboard.KeyMnemonic;
-import org.tn5250j.keyboard.KeyMnemonicResolver;
-import org.tn5250j.tools.logging.TN5250jLogFactory;
-import org.tn5250j.tools.logging.TN5250jLogger;
+import static org.tn5250j.TN5250jConstants.*;
 
 public class Screen5250 {
 
@@ -94,6 +96,8 @@ public class Screen5250 {
 
     // vector of listeners for changes to the screen.
     private Vector<ScreenListener> screenListeners = null;
+
+    private Vector<GraphicsListener> graphicsListeners = new Vector<>();
 
     // Operator Information Area
     private ScreenOIA oia;
@@ -407,7 +411,7 @@ public class Screen5250 {
 
     /**
      * This will move the screen cursor based on the mouse event.
-     *
+     * <p>
      * I do not think the checks here for the gui characters should be here but
      * will leave them here for now until we work out the interaction.  This
      * should be up to the gui frontend in my opinion.
@@ -604,7 +608,7 @@ public class Screen5250 {
      * keystrokes will be sent to the location given. The string being passed
      * can also contain mnemonic values such as [enter] enter key,[tab] tab key,
      * [pf1] pf1 etc...
-     *
+     * <p>
      * These will be processed as if you had pressed these keys from the
      * keyboard. All the valid special key values are contained in the MNEMONIC
      * enumeration. See also {@link KeyMnemonic}
@@ -712,42 +716,40 @@ public class Screen5250 {
      * PF1-24 keys or the Page Up key. All the valid special key values are
      * contained in the AID_ enumeration:
      *
-     * @param aidKey
-     *            The aid key to be sent to the host
-     *
+     * @param aidKey The aid key to be sent to the host
      * @see #sendKeys
      * @see TN5250jConstants#AID_CLEAR
-     * @see #AID_ENTER
-     * @see #AID_HELP
-     * @see #AID_ROLL_UP
-     * @see #AID_ROLL_DOWN
-     * @see #AID_ROLL_LEFT
-     * @see #AID_ROLL_RIGHT
-     * @see #AID_PRINT
-     * @see #AID_PF1
-     * @see #AID_PF2
-     * @see #AID_PF3
-     * @see #AID_PF4
-     * @see #AID_PF5
-     * @see #AID_PF6
-     * @see #AID_PF7
-     * @see #AID_PF8
-     * @see #AID_PF9
-     * @see #AID_PF10
-     * @see #AID_PF11
-     * @see #AID_PF12
-     * @see #AID_PF13
-     * @see #AID_PF14
-     * @see #AID_PF15
-     * @see #AID_PF16
-     * @see #AID_PF17
-     * @see #AID_PF18
-     * @see #AID_PF19
-     * @see #AID_PF20
-     * @see #AID_PF21
-     * @see #AID_PF22
-     * @see #AID_PF23
-     * @see #AID_PF24
+     * @see TN5250jConstants#AID_ENTER
+     * @see TN5250jConstants#AID_HELP
+     * @see TN5250jConstants#AID_ROLL_UP
+     * @see TN5250jConstants#AID_ROLL_DOWN
+     * @see TN5250jConstants#AID_ROLL_LEFT
+     * @see TN5250jConstants#AID_ROLL_RIGHT
+     * @see TN5250jConstants#AID_PRINT
+     * @see TN5250jConstants#AID_PF1
+     * @see TN5250jConstants#AID_PF2
+     * @see TN5250jConstants#AID_PF3
+     * @see TN5250jConstants#AID_PF4
+     * @see TN5250jConstants#AID_PF5
+     * @see TN5250jConstants#AID_PF6
+     * @see TN5250jConstants#AID_PF7
+     * @see TN5250jConstants#AID_PF8
+     * @see TN5250jConstants#AID_PF9
+     * @see TN5250jConstants#AID_PF10
+     * @see TN5250jConstants#AID_PF11
+     * @see TN5250jConstants#AID_PF12
+     * @see TN5250jConstants#AID_PF13
+     * @see TN5250jConstants#AID_PF14
+     * @see TN5250jConstants#AID_PF15
+     * @see TN5250jConstants#AID_PF16
+     * @see TN5250jConstants#AID_PF17
+     * @see TN5250jConstants#AID_PF18
+     * @see TN5250jConstants#AID_PF19
+     * @see TN5250jConstants#AID_PF20
+     * @see TN5250jConstants#AID_PF21
+     * @see TN5250jConstants#AID_PF22
+     * @see TN5250jConstants#AID_PF23
+     * @see TN5250jConstants#AID_PF24
      */
     public void sendAid(int aidKey) {
 
@@ -756,7 +758,6 @@ public class Screen5250 {
 
     /**
      * Restores the error line and sets the error mode off.
-     *
      */
     protected void resetError() {
 
@@ -1474,15 +1475,13 @@ public class Screen5250 {
     /**
      * Method: endOfField
      * <p>
-     *
+     * <p>
      * convenience method that call endOfField with lastRow lastCol and passes
      * the posSpace to that method
      *
-     * @param posSpace
-     *            value of type boolean - specifying to return the position of
-     *            the the last space or not
+     * @param posSpace value of type boolean - specifying to return the position of
+     *                 the the last space or not
      * @return a value of type int - the screen postion (row * columns) + col
-     *
      */
     private int endOfField(boolean posSpace) {
         return endOfField(lastPos, posSpace);
@@ -1491,19 +1490,16 @@ public class Screen5250 {
     /**
      * Method: endOfField
      * <p>
-     *
+     * <p>
      * gets the position of the last character of the current field posSpace
      * parameter tells the routine whether to return the position of the last
      * space ( <= ' ') or the last non space posSpace == true last occurrence of
      * char <= ' ' posSpace == false last occurrence of char > ' '
      *
-     * @param pos
-     *            value of type int - position to start from
-     * @param posSpace
-     *            value of type boolean - specifying to return the position of
-     *            the the last space or not
+     * @param pos      value of type int - position to start from
+     * @param posSpace value of type boolean - specifying to return the position of
+     *                 the the last space or not
      * @return a value of type int - the screen postion (row * columns) + col
-     *
      */
     private int endOfField(int pos, boolean posSpace) {
 
@@ -1897,7 +1893,6 @@ public class Screen5250 {
     }
 
     /**
-     *
      * Convinience class to return if the position that is passed is in a field
      * or not. If it is then the chgToField parameter will change the current
      * field to this field where the position indicates
@@ -1912,7 +1907,6 @@ public class Screen5250 {
     }
 
     /**
-     *
      * Convinience class to return if the position that is passed is in a field
      * or not. If it is then the field at this position becomes the current
      * working field
@@ -1940,7 +1934,6 @@ public class Screen5250 {
     }
 
     /**
-     *
      * Convinience class to return if the position at row and column that is
      * passed is in a field or not. If it is then the chgToField parameter will
      * change the current field to this field where the row and column
@@ -2043,9 +2036,9 @@ public class Screen5250 {
      * Return the whole screen represented as a character array
      *
      * @return character array containing the text
-     *
+     * <p>
      * Added by Luc - LDC
-     *
+     * <p>
      * Note to KJP - Have to ask what the difference is between this method and
      * the other
      */
@@ -2069,7 +2062,6 @@ public class Screen5250 {
     }
 
     /**
-     *
      * Return the screen represented as a character array
      *
      * @return character array containing the text
@@ -2112,19 +2104,19 @@ public class Screen5250 {
 
     /**
      * <p>
-     *  GetScreen retrieves the various planes associated with the presentation
-     *  space. The data is returned as a linear array of character values in the
-     *  array provided. The array is not terminated by a null character except
-     *  when data is retrieved from the text plane, in which case a single null
-     *  character is appended.
-     *  </p>
-     *  <p>
-     *  The application must supply a buffer for the returned data and the length
-     *  of the buffer. Data is returned starting from the beginning of the
-     *  presentation space and continuing until the buffer is full or the entire
-     *  plane has been copied. For text plane data, the buffer must include one
-     *  extra position for the terminating null character.
-     *  <p>
+     * GetScreen retrieves the various planes associated with the presentation
+     * space. The data is returned as a linear array of character values in the
+     * array provided. The array is not terminated by a null character except
+     * when data is retrieved from the text plane, in which case a single null
+     * character is appended.
+     * </p>
+     * <p>
+     * The application must supply a buffer for the returned data and the length
+     * of the buffer. Data is returned starting from the beginning of the
+     * presentation space and continuing until the buffer is full or the entire
+     * plane has been copied. For text plane data, the buffer must include one
+     * extra position for the terminating null character.
+     * <p>
      *
      * @param buffer
      * @param bufferLength
@@ -2137,11 +2129,11 @@ public class Screen5250 {
 
     /**
      * <p>
-     *  GetScreen retrieves the various planes associated with the presentation
-     *  space. The data is returned as a linear array of character values in the
-     *  array provided. The array is not terminated by a null character except
-     *  when data is retrieved from the text plane, in which case a single null
-     *  character is appended.
+     * GetScreen retrieves the various planes associated with the presentation
+     * space. The data is returned as a linear array of character values in the
+     * array provided. The array is not terminated by a null character except
+     * when data is retrieved from the text plane, in which case a single null
+     * character is appended.
      * </p>
      * <p>
      * The application must supply a buffer for the returned data and the length
@@ -2164,20 +2156,20 @@ public class Screen5250 {
 
     /**
      * <p>
-     *  GetScreen retrieves the various planes associated with the presentation
-     *  space. The data is returned as a linear array of character values in the
-     *  array provided. The array is not terminated by a null character except
-     *  when data is retrieved from the text plane, in which case a single null
-     *  character is appended.
-     *  </p>
-     *  <p>
-     *  The application must supply a buffer for the returned data and the length
-     *  of the buffer. Data is returned starting from the given coordinates and
-     *  continuing until the specified number of characters have been copied,
-     *  the buffer is full, or the entire plane has been copied. For text plane
-     *  data, the buffer must include one extra position for the terminating null
-     *  character.
-     *  </p>
+     * GetScreen retrieves the various planes associated with the presentation
+     * space. The data is returned as a linear array of character values in the
+     * array provided. The array is not terminated by a null character except
+     * when data is retrieved from the text plane, in which case a single null
+     * character is appended.
+     * </p>
+     * <p>
+     * The application must supply a buffer for the returned data and the length
+     * of the buffer. Data is returned starting from the given coordinates and
+     * continuing until the specified number of characters have been copied,
+     * the buffer is full, or the entire plane has been copied. For text plane
+     * data, the buffer must include one extra position for the terminating null
+     * character.
+     * </p>
      *
      * @param buffer
      * @param bufferLength
@@ -2195,10 +2187,10 @@ public class Screen5250 {
 
     /**
      * <p>
-     *  GetScreenRect retrieves data from the various planes associated with the
-     *  presentation space. The data is returned as a linear array of character
-     *  values in the buffer provided.
-     *  </p>
+     * GetScreenRect retrieves data from the various planes associated with the
+     * presentation space. The data is returned as a linear array of character
+     * values in the buffer provided.
+     * </p>
      *
      * <p>
      * The application supplies two positions that represent opposing corners of
@@ -2229,10 +2221,10 @@ public class Screen5250 {
 
     /**
      * <p>
-     *  GetScreenRect retrieves data from the various planes associated with the
-     *  presentation space. The data is returned as a linear array of character
-     *  values in the buffer provided. The buffer is not terminated by a null
-     *  character.
+     * GetScreenRect retrieves data from the various planes associated with the
+     * presentation space. The data is returned as a linear array of character
+     * values in the buffer provided. The buffer is not terminated by a null
+     * character.
      * </p>
      * <p>
      * The application supplies two coordinates that represent opposing corners
@@ -2328,7 +2320,7 @@ public class Screen5250 {
      * Set the current working field to the field number specified.
      *
      * @param f -
-     *            numeric field number on the screen
+     *          numeric field number on the screen
      * @return true or false whether it was sucessful
      */
     public boolean gotoField(int f) {
@@ -2365,7 +2357,6 @@ public class Screen5250 {
 
     /**
      * Convenience class to position the cursor to the next word on the screen
-     *
      */
     private void gotoNextWord() {
 
@@ -2391,7 +2382,6 @@ public class Screen5250 {
     /**
      * Convenience class to position the cursor to the previous word on the
      * screen
-     *
      */
     private void gotoPrevWord() {
 
@@ -2613,10 +2603,10 @@ public class Screen5250 {
 
     /**
      * Creates a scroll bar on the screen using the parameters provided.
-     *  ** we only support vertical scroll bars at the time.
+     * ** we only support vertical scroll bars at the time.
      *
-     * @param flag -
-     *            type to draw - vertical or horizontal
+     * @param flag               -
+     *                           type to draw - vertical or horizontal
      * @param totalRowScrollable
      * @param totalColScrollable
      * @param sliderRowPos
@@ -2712,7 +2702,7 @@ public class Screen5250 {
 
     /**
      * Roll the screen up or down.
-     *
+     * <p>
      * Byte 1: Bit 0 0 = Roll up 1 = Roll down Bits 1-2 Reserved Bits 3-7 Number
      * of lines that the designated area is to be rolled Byte 2: Bits 0-7 Line
      * number defining the top line of the area that will participate in the
@@ -2794,7 +2784,7 @@ public class Screen5250 {
      * Add a field to the field format table.
      *
      * @param attr - Field attribute
-     * @param len - length of field
+     * @param len  - length of field
      * @param ffw1 - Field format word 1
      * @param ffw2 - Field format word 2
      * @param fcw1 - Field control word 1
@@ -2874,7 +2864,6 @@ public class Screen5250 {
     /**
      * Redraw the fields on the screen. Used for gui enhancement to redraw the
      * fields when toggling
-     *
      */
     protected void drawFields() {
 
@@ -2941,7 +2930,7 @@ public class Screen5250 {
      * Set the field to be displayed as highlighted.
      *
      * @param sf -
-     *            Field to be highlighted
+     *           Field to be highlighted
      */
     protected void setFieldHighlighted(ScreenField sf) {
 
@@ -2963,7 +2952,7 @@ public class Screen5250 {
      * presentation on the screen after the field is exited.
      *
      * @param sf -
-     *            Field to be unhighlighted
+     *           Field to be unhighlighted
      */
     protected void unsetFieldHighlighted(ScreenField sf) {
 
@@ -3062,9 +3051,9 @@ public class Screen5250 {
 
     /**
      * Draw or redraw the dirty parts of the screen and display them.
-     *
+     * <p>
      * Rectangle dirty holds the dirty area of the screen to be updated.
-     *
+     * <p>
      * If you want to change the screen in anyway you need to set the screen
      * attributes before calling this routine.
      */
@@ -3104,10 +3093,10 @@ public class Screen5250 {
 
     /**
      * Change position of the screen by the increment of parameter passed.
-     *
+     * <p>
      * If the position change is under the minimum of the first screen position
      * then the position is moved to the last row and column of the screen.
-     *
+     * <p>
      * If the position change is over the last row and column of the screen then
      * cursor is moved to first position of the screen.
      *
@@ -3185,7 +3174,6 @@ public class Screen5250 {
 
     /**
      * Saves off the current error line characters to be used later.
-     *
      */
     protected void saveErrorLine() {
         planes.saveErrorLine();
@@ -3273,7 +3261,6 @@ public class Screen5250 {
 
     /**
      * Clear the gui constructs
-     *
      */
     protected void clearGuiStuff() {
 
@@ -3306,7 +3293,6 @@ public class Screen5250 {
 
     /**
      * Notify all registered listeners of the onScreenChanged event.
-     *
      */
     private void fireScreenChanged(int which, int startRow, int startCol,
                                    int endRow, int endCol) {
@@ -3327,7 +3313,6 @@ public class Screen5250 {
 
     /**
      * Notify all registered listeners of the onScreenChanged event.
-     *
      */
     private synchronized void fireScreenChanged(int update) {
         if (dirtyScreen.x > dirtyScreen.y) {
@@ -3342,7 +3327,6 @@ public class Screen5250 {
 
     /**
      * Notify all registered listeners of the onScreenChanged event.
-     *
      */
     private synchronized void fireCursorChanged(int update) {
         int startRow = getRow(lastPos);
@@ -3359,7 +3343,6 @@ public class Screen5250 {
 
     /**
      * Notify all registered listeners of the onScreenSizeChanged event.
-     *
      */
     private void fireScreenSizeChanged() {
         if (screenListeners != null) {
@@ -3368,6 +3351,14 @@ public class Screen5250 {
                 ScreenListener target =
                         lc.elementAt(i);
                 target.onScreenSizeChanged(numRows, numCols);
+            }
+        }
+    }
+
+    public void fireGraphicsOrder(IGraphicOrder order) {
+        if (graphicsListeners != null) {
+            for (GraphicsListener gl : graphicsListeners) {
+                gl.onGraphicsOrder(order);
             }
         }
     }
@@ -3384,7 +3375,7 @@ public class Screen5250 {
     /**
      * Add a ScreenListener to the listener list.
      *
-     * @param listener  The ScreenListener to be added
+     * @param listener The ScreenListener to be added
      */
     public void addScreenListener(ScreenListener listener) {
 
@@ -3396,9 +3387,23 @@ public class Screen5250 {
     }
 
     /**
+     * Add a GraphicsListener to the listener list.
+     *
+     * @param listener The ScreenListener to be added
+     */
+    public void addGraphicsListener(GraphicsListener listener) {
+
+        if (graphicsListeners == null) {
+            graphicsListeners = new java.util.Vector<GraphicsListener>(1);
+        }
+        graphicsListeners.addElement(listener);
+
+    }
+
+    /**
      * Remove a ScreenListener from the listener list.
      *
-     * @param listener  The ScreenListener to be removed
+     * @param listener The ScreenListener to be removed
      */
     public void removeScreenListener(ScreenListener listener) {
 

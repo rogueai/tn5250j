@@ -240,6 +240,8 @@ public interface TN5250jConstants {
     byte CMD_ROLL = 0x23; // 35
     byte CMD_READ_SCREEN_TO_PRINT = (byte) 0x66; // 102
 
+    byte CMD_GRAPHIC_WRITE = (byte) 0xFF; // 255
+
     // PLANES
     int PLANE_TEXT = 1;
     int PLANE_COLOR = 2;

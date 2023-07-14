@@ -25,13 +25,17 @@
  */
 package org.tn5250j;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import org.tn5250j.event.*;
+import org.tn5250j.event.order.IGraphicOrder;
+import org.tn5250j.framework.tn5250.Screen5250;
+import org.tn5250j.framework.tn5250.ScreenOIA;
+import org.tn5250j.sessionsettings.ColumnSeparator;
+import org.tn5250j.tools.GUIGraphicsUtils;
+import org.tn5250j.tools.logging.TN5250jLogFactory;
+import org.tn5250j.tools.logging.TN5250jLogger;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.font.FontRenderContext;
@@ -43,21 +47,9 @@ import java.awt.image.ImageObserver;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.SwingUtilities;
-
-import org.tn5250j.event.ScreenListener;
-import org.tn5250j.event.ScreenOIAListener;
-import org.tn5250j.event.SessionConfigEvent;
-import org.tn5250j.event.SessionConfigListener;
-import org.tn5250j.framework.tn5250.Screen5250;
-import org.tn5250j.framework.tn5250.ScreenOIA;
-import org.tn5250j.sessionsettings.ColumnSeparator;
-import org.tn5250j.tools.GUIGraphicsUtils;
-import org.tn5250j.tools.logging.TN5250jLogFactory;
-import org.tn5250j.tools.logging.TN5250jLogger;
-
 public class GuiGraphicBuffer implements ScreenOIAListener,
         ScreenListener,
+        GraphicsListener,
         PropertyChangeListener,
         SessionConfigListener,
         ActionListener {
@@ -179,6 +171,8 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
         screen.getOIA().addOIAListener(this);
         screen.addScreenListener(this);
+        screen.addGraphicsListener(this);
+
         tArea = new Rectangle2D.Float();
         cArea = new Rectangle2D.Float();
         aArea = new Rectangle2D.Float();
@@ -481,6 +475,7 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
     /**
      * Update the configuration settings
+     *
      * @param pce
      */
     public void onConfigChanged(SessionConfigEvent pce) {
@@ -721,8 +716,6 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
     }
 
     /**
-     *
-     *
      * @param x
      * @param y
      * @return
@@ -754,17 +747,14 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
     /**
      * Return the row column based on the screen x,y position coordinates
-     *
+     * <p>
      * It will calculate a 0,0 based row and column based on the screen point
      * coordinate.
      *
-     * @param x
-     *            screen x position
-     * @param y
-     *            screen y position
-     *
+     * @param x screen x position
+     * @param y screen y position
      * @return screen array position based 0,0 so position row 1 col 3 would be
-     *         2
+     * 2
      */
     public int getRowColFromPoint(int x, int y) {
 
@@ -862,9 +852,9 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
     /**
      * Fills the passed Rectangle with the starting row and column and width and
      * height of the selected area.
-     *
+     * <p>
      * 1 BASED so column 1 row one is returned 1,1
-     *
+     * <p>
      * If there is no area bounded then the full screen area is returned.
      *
      * @param bounds
@@ -1767,6 +1757,16 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
 
     }
 
+    public void onGraphicsOrder(IGraphicOrder order) {
+        if (order != IGraphicOrder.NOOP) {
+            log.info("graphics order event");
+            Graphics2D g2 = getDrawingArea();
+            order.execute(g2);
+            g2.dispose();
+            updateImage(aArea.getBounds());
+        }
+    }
+
     public void onScreenSizeChanged(int rows, int cols) {
         log.info("screen size change");
         gui.resizeMe();
@@ -1850,11 +1850,23 @@ public class GuiGraphicBuffer implements ScreenOIAListener,
                 break;
             case ScreenOIA.OIA_LEVEL_SCRIPT:
                 if (changedOIA.isScriptActive()) {
-                    drawScriptRunning(colorGreen);
+                    g2d = getWritingArea(font);
+                    Y = (rowHeight * (screen.getRows() + 2))
+                            - (lm.getLeading() + lm.getDescent());
+                    g2d.setColor(colorGreen);
+                    g2d.drawString("*", (float) scriptArea.getX(), Y);
                     updateImage(scriptArea.getBounds());
+                    g2d.dispose();
+                    // FIXME drawScriptRunning(colorGreen);
+                    // updateImage(scriptArea.getBounds());
                 } else {
-                    eraseScriptRunning(colorBg);
+                    g2d = getWritingArea(font);
+                    g2d.setColor(colorBg);
+                    g2d.fill(scriptArea);
                     updateImage(scriptArea.getBounds());
+                    g2d.dispose();
+                    // FIXME eraseScriptRunning(colorBg);
+                    // updateImage(scriptArea.getBounds());
 
                 }
                 break;

@@ -88,8 +88,25 @@ public class DataStreamProducer implements Runnable {
         }
     }
 
+    public static int indexOf(byte[] array, byte[] target) {
+        if (target.length == 0) {
+            return 0;
+        }
+        outer:
+        for (int i = 0; i < array.length - target.length + 1; i++) {
+            for (int j = 0; j < target.length; j++) {
+                if (array[i + j] != target[j]) {
+                    continue outer;
+                }
+            }
+            return i;
+        }
+        return -1;
+    }
+
     private void loadStream(byte streamBuffer[], int offset) {
 
+        boolean isGraphicsWrite = indexOf(streamBuffer, new byte[]{(byte) 0xFF, (byte) 0xFF}) != -1;
         int partialLen = (streamBuffer[offset] & 0xff) << 8 | streamBuffer[offset + 1] & 0xff;
         int bufferLen = streamBuffer.length;
 
@@ -113,9 +130,9 @@ public class DataStreamProducer implements Runnable {
             log.debug("partial stream saved");
             System.arraycopy(streamBuffer, 0, saveStream, 0, streamBuffer.length);
         } else {
-            int buf_len = partialLen + 2;
+            int buf_len = partialLen + (isGraphicsWrite ? 3 : 2);
             byte[] buf = new byte[buf_len];
-            if (isBufferShifted(partialLen, bufferLen) && isOpcodeShifted(streamBuffer, offset)) {
+            if (isBufferShifted(partialLen, bufferLen, isGraphicsWrite) && isOpcodeShifted(streamBuffer, offset)) {
                 log.debug("Invalid stream buffer detected. Ignoring the inserted byte.");
                 System.arraycopy(streamBuffer, offset, buf, 0, MINIMAL_PARTIAL_STREAM_LEN);
                 System.arraycopy(streamBuffer, offset + MINIMAL_PARTIAL_STREAM_LEN + 1, buf, MINIMAL_PARTIAL_STREAM_LEN, partialLen);
@@ -137,8 +154,8 @@ public class DataStreamProducer implements Runnable {
         return (0 <= code && code <= 12);
     }
 
-    private boolean isBufferShifted(int partialLen, int bufferLen) {
-        return partialLen + MINIMAL_PARTIAL_STREAM_LEN + 1 == bufferLen;
+    private boolean isBufferShifted(int partialLen, int bufferLen, boolean isGrphicsWrite) {
+        return partialLen + MINIMAL_PARTIAL_STREAM_LEN + (isGrphicsWrite ? 2 : 1) == bufferLen;
     }
 
     public final byte[] readIncoming() throws IOException {
@@ -180,11 +197,15 @@ public class DataStreamProducer implements Runnable {
             // 0030:  20 00 8A 9A 00 00 03 FF FF 12 A0 00 00 04 00 00  ...............
             // --------------------------- || || -------------------------------------
             // 0040:  03 04 40 04 11 00 20 01 07 00 00 00 18 00 00 10 ..@... .........
+            //
+            // [rogueai] 2023-07-10: 0xFFFF is actually a valid 5292-2 order to indicate the
+            // start of a graphics write, as defined by SA21-9247-06 "5250 Functions
+            // Reference Manual"
 
-            if (j == 255 && i == 255) {
-                j = -1;
-                continue;
-            }
+//            if (j == 255 && i == 255) {
+//                j = -1;
+//                continue;
+//            }
             baosin.write(i);
             // check for end of record EOR and IAC  - FFEF
             if (j == 255 && i == 239)

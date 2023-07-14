@@ -54,7 +54,7 @@ public class Stream5250 {
 
     /**
      * This method takes a byte array and initializes the object information
-     *    to be used.
+     * to be used.
      *
      * @param abyte0
      */
@@ -74,14 +74,21 @@ public class Stream5250 {
     }
 
     /**
-     * @throws IllegalStateException
      * @return
+     * @throws IllegalStateException
      */
     public final byte getNextByte() {
         if (buffer == null || pos > buffer.length)
             throw new IllegalStateException("Buffer length exceeded: " + pos);
         else
             return buffer[pos++];
+    }
+
+    public final byte peek() {
+        if (buffer == null || pos > buffer.length)
+            throw new IllegalStateException("Buffer length exceeded: " + pos);
+        else
+            return buffer[pos + 1];
     }
 
     public final void setPrevByte()
@@ -96,6 +103,7 @@ public class Stream5250 {
 
     /**
      * Returns where we are in the buffer
+     *
      * @return position in the buffer
      */
     public final int getCurrentPos() {
@@ -119,6 +127,7 @@ public class Stream5250 {
 
     /**
      * Determines if any more bytes are available in the buffer to be processed.
+     *
      * @return yes or no
      */
     public final boolean hasNext() {
@@ -151,10 +160,10 @@ public class Stream5250 {
      * This routine will retrieve a byte array based on the first two bytes being
      * the length of the segment.
      *
-     * @param segment - byte array
-     * @param length - length of segment to return
+     * @param segment   - byte array
+     * @param length    - length of segment to return
      * @param adjustPos - adjust the position of the buffer to the end of the seg
-     *                      ment
+     *                  ment
      * @throws Exception
      */
     public final void getSegment(byte[] segment, int length, boolean adjustPos)
