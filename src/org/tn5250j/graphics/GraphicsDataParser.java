@@ -6,8 +6,7 @@ import org.tn5250j.framework.tn5250.Screen5250;
 import org.tn5250j.tools.logging.TN5250jLogFactory;
 import org.tn5250j.tools.logging.TN5250jLogger;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Parser for GDDM Graphics Data
@@ -47,9 +46,7 @@ public class GraphicsDataParser {
                         // skip
                         while (coords.size() < 4) {
                             Byte co = graphicsData.get(++i);
-                            if (co == -111 || co == -112) {
-                                continue;
-                            } else {
+                            if (co != -111 && co != -112) {
                                 coords.add(co);
                             }
                         }
@@ -74,9 +71,8 @@ public class GraphicsDataParser {
                         nPoints++;
                         nextByte = graphicsData.get(i + 1);
                     }
-                    IGraphicOrder order = new DrawPolylineOrder(xPoints.stream().mapToInt(Integer::intValue).toArray(),
-                            yPoints.stream().mapToInt(Integer::intValue).toArray(),
-                            nPoints);
+                    IGraphicOrder order = new DrawPolylineOrder(xPoints.stream().mapToInt(Integer::intValue)
+                            .toArray(), yPoints.stream().mapToInt(Integer::intValue).toArray(), nPoints);
                     log.debug(xPoints);
                     log.debug(yPoints);
                     screen.fireGraphicsOrder(order);
@@ -92,8 +88,11 @@ public class GraphicsDataParser {
                     break;
                 case SetColor: // 0xB0 Set Color
                     // 1 byte: 0100 0aaa
-                    graphicsData.get(++i);
-                    screen.fireGraphicsOrder(IGraphicOrder.NOOP);
+                    Byte colb = graphicsData.get(++i);
+                    String cols = String.format("%8s", Integer.toBinaryString(colb & 0xFF)).replace(' ', '0');
+                    cols = cols.substring(5);
+                    int colIdx = Integer.parseInt(cols, 2);
+                    GraphicsContext.getInstance().setColorIndex(colIdx);
                     break;
                 case SetStyle: // 0xB1 Set Style
                     // 4 bytes: 0100 aaaa 0100 bbbb 0100 cccc 0100 dddd
@@ -116,12 +115,45 @@ public class GraphicsDataParser {
                 case SetColorTable: // 0xB4 Set Color Table
                     // 3 bytes: 0100 0nnn 01rr rggg 01bbb000
                     // Processed until -110 0x92 End of Data
-                    i = skipTo(graphicsData, i, -110);
-                    screen.fireGraphicsOrder(IGraphicOrder.NOOP);
+                    nextByte = -1;
+                    while (nextByte != -110) {
+                        List<Byte> colors = new ArrayList<>();
+                        // skip
+                        while (colors.size() < 3) {
+                            Byte co = graphicsData.get(++i);
+                            if (co != -111 && co != -112) {
+                                colors.add(co);
+                            }
+                        }
+                        byte idxb = colors.get(0);
+                        byte c1b = colors.get(1);
+                        byte c2b = colors.get(2);
+
+                        // FIXME: find a better way to manipulate bits
+                        String is = String.format("%8s", Integer.toBinaryString(idxb & 0xFF)).replace(' ', '0');
+                        String c1s = String.format("%8s", Integer.toBinaryString(c1b & 0xFF)).replace(' ', '0');
+                        String c2s = String.format("%8s", Integer.toBinaryString(c2b & 0xFF)).replace(' ', '0');
+
+                        String idxs = is.substring(5);
+                        String rs = c1s.substring(2, 5);
+                        String gs = c1s.substring(5);
+                        String bs = c2s.substring(2, 5);
+                        int idx = Integer.parseInt(idxs, 2);
+                        int r = Integer.parseInt(rs, 2);
+                        int g = Integer.parseInt(gs, 2);
+                        int b = Integer.parseInt(bs, 2);
+
+                        GraphicsContext.getInstance().setTableColor(idx, r, g, b);
+                        nextByte = graphicsData.get(i + 1);
+                    }
                     break;
                 case SetMarker: // 0xB5 Set Marker
-                    graphicsData.get(++i);
-                    screen.fireGraphicsOrder(IGraphicOrder.NOOP);
+                    // 1 byte: 0100 0aaa
+                    Byte markb = graphicsData.get(++i);
+                    String marks = String.format("%8s", Integer.toBinaryString(markb & 0xFF)).replace(' ', '0');
+                    marks = marks.substring(4);
+                    int marker = Integer.parseInt(marks, 2);
+                    GraphicsContext.getInstance().setMarker(marker);
                     break;
                 case SetLineWeight: // 0xB6 Set Line Weight
                     // 1 byte: 0100 000a

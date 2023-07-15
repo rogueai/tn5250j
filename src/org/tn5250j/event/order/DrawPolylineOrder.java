@@ -1,11 +1,11 @@
 package org.tn5250j.event.order;
 
+import org.tn5250j.graphics.GraphicsContext;
 import org.tn5250j.tools.logging.TN5250jLogFactory;
 import org.tn5250j.tools.logging.TN5250jLogger;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.util.Arrays;
 
 public class DrawPolylineOrder implements IGraphicOrder {
 
@@ -30,7 +30,8 @@ public class DrawPolylineOrder implements IGraphicOrder {
         tform.scale(1, -1);
         g.setTransform(tform);
 
-        g.setColor(Color.RED);
+        org.tn5250j.graphics.model.Color color = GraphicsContext.getInstance().getColor();
+        g.setColor(new Color(color.getR(), color.getG(), color.getB()));
         g.setStroke(new BasicStroke(2F));
 
         g.drawPolyline(xPoints, yPoints, nPoints);
