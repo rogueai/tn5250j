@@ -2,11 +2,13 @@ package org.tn5250j.graphics;
 
 import org.tn5250j.event.order.DrawPolylineOrder;
 import org.tn5250j.event.order.IGraphicOrder;
+import org.tn5250j.event.order.WritePolymarkerOrder;
 import org.tn5250j.framework.tn5250.Screen5250;
 import org.tn5250j.tools.logging.TN5250jLogFactory;
 import org.tn5250j.tools.logging.TN5250jLogger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Parser for GDDM Graphics Data
@@ -82,9 +84,44 @@ public class GraphicsDataParser {
                     graphicsData.get(++i);
                     break;
                 case WritePolymarker: // 0xA4 Write Polymarker
-                    // 1 byte: 0100 0aaa
-                    i = skipTo(graphicsData, i, -110);
-                    screen.fireGraphicsOrder(IGraphicOrder.NOOP);
+                    // 4 bytes: 0100 xxxx 01xx xxxx 0100 yyyy 01yy yyyy
+                    // Processed until -110 0x92 End of Data
+                    List<Integer> mxPoints = new ArrayList<>();
+                    List<Integer> myPoints = new ArrayList<>();
+                    byte mnextByte = -1;
+
+                    while (mnextByte != -110) {
+                        List<Byte> coords = new ArrayList<>();
+                        // skip
+                        while (coords.size() < 4) {
+                            Byte co = graphicsData.get(++i);
+                            if (co != -111 && co != -112) {
+                                coords.add(co);
+                            }
+                        }
+                        byte x1 = coords.get(0);
+                        byte x2 = coords.get(1);
+                        byte y1 = coords.get(2);
+                        byte y2 = coords.get(3);
+
+                        // FIXME: find a better way to manipulate bits
+                        String x1s = String.format("%8s", Integer.toBinaryString(x1 & 0xFF)).replace(' ', '0');
+                        String x2s = String.format("%8s", Integer.toBinaryString(x2 & 0xFF)).replace(' ', '0');
+                        String y1s = String.format("%8s", Integer.toBinaryString(y1 & 0xFF)).replace(' ', '0');
+                        String y2s = String.format("%8s", Integer.toBinaryString(y2 & 0xFF)).replace(' ', '0');
+
+                        String xs = x1s.substring(4) + x2s.substring(2);
+                        String ys = y1s.substring(4) + y2s.substring(2);
+                        int x = Integer.parseInt(xs, 2);
+                        int y = Integer.parseInt(ys, 2);
+                        mxPoints.add(x * scaleFactor);
+                        myPoints.add(y * scaleFactor);
+
+                        mnextByte = graphicsData.get(i + 1);
+                    }
+                    IGraphicOrder morder = new WritePolymarkerOrder(mxPoints.stream().mapToInt(Integer::intValue)
+                            .toArray(), myPoints.stream().mapToInt(Integer::intValue).toArray());
+                    screen.fireGraphicsOrder(morder);
                     break;
                 case SetColor: // 0xB0 Set Color
                     // 1 byte: 0100 0aaa

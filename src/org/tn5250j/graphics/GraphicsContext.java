@@ -101,4 +101,7 @@ public class GraphicsContext {
         }
     }
 
+    public MarkerStyle getMarker() {
+        return marker;
+    }
 }

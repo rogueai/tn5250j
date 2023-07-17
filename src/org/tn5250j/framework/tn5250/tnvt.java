@@ -54,13 +54,13 @@ public final class tnvt implements Runnable {
 
     // negotiating commands
     private static final byte IAC = (byte) -1; // 255 FF
-    private static final byte DONT = (byte) -2; //254 FE
-    private static final byte DO = (byte) -3; //253 FD
-    private static final byte WONT = (byte) -4; //252 FC
-    private static final byte WILL = (byte) -5; //251 FB
-    private static final byte SB = (byte) -6; //250 Sub Begin FA
-    private static final byte SE = (byte) -16; //240 Sub End F0
-    private static final byte EOR = (byte) -17; //239 End of Record EF
+    private static final byte DONT = (byte) -2; // 254 FE
+    private static final byte DO = (byte) -3; // 253 FD
+    private static final byte WONT = (byte) -4; // 252 FC
+    private static final byte WILL = (byte) -5; // 251 FB
+    private static final byte SB = (byte) -6; // 250 Sub Begin FA
+    private static final byte SE = (byte) -16; // 240 Sub End F0
+    private static final byte EOR = (byte) -17; // 239 End of Record EF
     private static final byte TERMINAL_TYPE = (byte) 24; // 18
     private static final byte OPT_END_OF_RECORD = (byte) 25; // 19
     private static final byte TRANSMIT_BINARY = (byte) 0; // 0
@@ -79,8 +79,8 @@ public final class tnvt implements Runnable {
     private static final byte ESC = 0x04; // 04
 
     /**
-     * Until OS V7R1, the length limit for the PCCMD parameter of STRPCCMD is 123 chars.
-     * (Remark: since V7R2 the new limit is 1023, for now we stick to 123)
+     * Until OS V7R1, the length limit for the PCCMD parameter of STRPCCMD is 123 chars. (Remark: since V7R2 the new
+     * limit is 1023, for now we stick to 123)
      * <a href="http://www-01.ibm.com/support/docview.wss?uid=nas8N1014202">
      * CL Example Using the STRPCCMD Command
      * </a>
@@ -251,7 +251,8 @@ public final class tnvt implements Runnable {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
-                        screen52.getOIA().setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, ScreenOIA.OIA_LEVEL_INPUT_INHIBITED, "X - Connecting");
+                        screen52.getOIA()
+                                .setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, ScreenOIA.OIA_LEVEL_INPUT_INHIBITED, "X - Connecting");
                     }
                 });
 
@@ -261,7 +262,7 @@ public final class tnvt implements Runnable {
             }
 
             //         sock = new Socket(s, port);
-            //smk - For SSL compability
+            // smk - For SSL compability
             SocketConnector sc = new SocketConnector();
             if (sslType != null) sc.setSSLType(sslType);
             sock = sc.createSocket(s, port);
@@ -300,7 +301,8 @@ public final class tnvt implements Runnable {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
-                        screen52.getOIA().setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, ScreenOIA.OIA_LEVEL_INPUT_INHIBITED);
+                        screen52.getOIA()
+                                .setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, ScreenOIA.OIA_LEVEL_INPUT_INHIBITED);
                     }
                 });
 
@@ -329,7 +331,8 @@ public final class tnvt implements Runnable {
 
         // Added by LUC - LDC to fix a null pointer exception.
         if (!connected) {
-            screen52.getOIA().setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, ScreenOIA.OIA_LEVEL_INPUT_INHIBITED, "X - Disconnected");
+            screen52.getOIA()
+                    .setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, ScreenOIA.OIA_LEVEL_INPUT_INHIBITED, "X - Disconnected");
             return false;
         }
 
@@ -339,7 +342,8 @@ public final class tnvt implements Runnable {
             pthread.interrupt();
         }
 
-        screen52.getOIA().setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, ScreenOIA.OIA_LEVEL_INPUT_INHIBITED, "X - Disconnected");
+        screen52.getOIA()
+                .setInputInhibited(ScreenOIA.INPUTINHIBITED_SYSTEM_WAIT, ScreenOIA.OIA_LEVEL_INPUT_INHIBITED, "X - Disconnected");
         screen52.getOIA().setKeyBoardLocked(false);
         pendingUnlock = false;
 
@@ -355,7 +359,7 @@ public final class tnvt implements Runnable {
 
             // WVL - LDC : TR.000345 : properly disconnect and clear screen
             // Is this the right place to set screen realestate on disconnect?
-            //controller.getScreen().clearAll();
+            // controller.getScreen().clearAll();
             screen52.goto_XY(0);
             screen52.setCursorActive(false);
             screen52.clearAll();
@@ -638,8 +642,7 @@ public final class tnvt implements Runnable {
     }
 
     /**
-     * Cancel Invite - taken from the rfc1205 - 5250 Telnet interface section
-     * 4.3
+     * Cancel Invite - taken from the rfc1205 - 5250 Telnet interface section 4.3
      * <p>
      * See notes inside method
      */
@@ -686,8 +689,8 @@ public final class tnvt implements Runnable {
         //
         // I have tried with not setting these flags and sending with 3 or 1
         // there is no effect and I still get a host print screen. Go figure
-        //0000: 000D 12A0 0000 0400 8003 1407 F6FFEF
-        //0000: 000D 12A0 0000 0400 8001 110E F6FFEF
+        // 0000: 000D 12A0 0000 0400 8003 1407 F6FFEF
+        // 0000: 000D 12A0 0000 0400 8001 110E F6FFEF
         //
         // Client sends header 000D12A0000004000003####F6FFEF
         //       operation code 3
@@ -789,8 +792,8 @@ public final class tnvt implements Runnable {
     private final void setInvited() {
 
         log.debug("invited");
-        if (!screen52.isStatusErrorCode())
-            screen52.getOIA().setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, ScreenOIA.OIA_LEVEL_INPUT_INHIBITED);
+        if (!screen52.isStatusErrorCode()) screen52.getOIA()
+                .setInputInhibited(ScreenOIA.INPUTINHIBITED_NOTINHIBITED, ScreenOIA.OIA_LEVEL_INPUT_INHIBITED);
 
     }
 
@@ -862,11 +865,9 @@ public final class tnvt implements Runnable {
     // WVL - LDC : TR.000300 : Callback scenario from 5250
 
     /**
-     * When command scanning is activated, the terminal reads the first and
-     * second character in the datastream (the zero position allows to
-     * devisualize the scan stream). If the sequence <code>#!</code> is
-     * encountered and if this sequence is <strong>not </strong> followed by a
-     * blank character, the {@link #parseCommand()}is called.
+     * When command scanning is activated, the terminal reads the first and second character in the datastream (the zero
+     * position allows to devisualize the scan stream). If the sequence <code>#!</code> is encountered and if this
+     * sequence is <strong>not </strong> followed by a blank character, the {@link #parseCommand()}is called.
      */
     private void scan() {
         // screen52.screen[1].getChar() + screen52.screen[2].getChar());
@@ -887,18 +888,14 @@ public final class tnvt implements Runnable {
     // WVL - LDC : TR.000300 : Callback scenario from 5250
 
     /**
-     * The screen is parsed starting from second position until a white space is
-     * encountered. When found the Session#execCommand(String, int) is
-     * called with the parsed string. The position immediately following the
-     * encountered white space, separating the command from the rest of the
-     * screen, is passed as starting index.
+     * The screen is parsed starting from second position until a white space is encountered. When found the
+     * Session#execCommand(String, int) is called with the parsed string. The position immediately following the
+     * encountered white space, separating the command from the rest of the screen, is passed as starting index.
      * <p>
-     * Note that the character at the starting position can potentially be a
-     * white space itself. The starting position in <code>execCommand</code>
-     * provided to make the scanning sequence more flexible. We'd like for
-     * example to embed also a <code>+</code> or <code>-</code> sign to
-     * indicate whether the tnvt should trigger a repaint or not. This would
-     * allow the flashing of command sequences without them becoming visible.
+     * Note that the character at the starting position can potentially be a white space itself. The starting position
+     * in <code>execCommand</code> provided to make the scanning sequence more flexible. We'd like for example to embed
+     * also a <code>+</code> or <code>-</code> sign to indicate whether the tnvt should trigger a repaint or not. This
+     * would allow the flashing of command sequences without them becoming visible.
      *
      * <ul>
      * <li><strong>PRE </strong> The screen character at position
@@ -916,7 +913,7 @@ public final class tnvt implements Runnable {
 
                 // Skip all white spaces between the command and the rest of
                 // the screen.
-                //for (; (i < screen.length) && (screen[i] == ' '); i++);
+                // for (; (i < screen.length) && (screen[i] == ' '); i++);
 
                 String remainder = new String(screen, i + 1, screen.length - (i + 1));
 
@@ -1074,7 +1071,7 @@ public final class tnvt implements Runnable {
             }
 
             // lets play nicely with the others on the playground
-            //me.yield();
+            // me.yield();
             Thread.yield();
 
         }
@@ -1107,10 +1104,10 @@ public final class tnvt implements Runnable {
                     sac = max(--sac, 0);
                     sa[sac++] = (byte) lastAttr;
                 }
-                //LDC: Check to see if it is an displayable character. If not,
+                // LDC: Check to see if it is an displayable character. If not,
                 //  do not convert the character.
                 //  The characters on screen are in unicode
-                //sa[sac++] =
+                // sa[sac++] =
                 // (byte)codePage.uni2ebcdic(screen52.screen[i].getChar());
                 char ch = planes.getChar(i);
                 byte byteCh = (byte) ch;
@@ -1154,10 +1151,10 @@ public final class tnvt implements Runnable {
                         sac = max(--sac, 0);
                         sa[sac++] = (byte) la;
                     }
-                    //LDC: Check to see if it is an displayable character. If not,
+                    // LDC: Check to see if it is an displayable character. If not,
                     //  do not convert the character.
                     //  The characters on screen are in unicode
-                    //sa[sac++] =
+                    // sa[sac++] =
                     // (byte)codePage.uni2ebcdic(screen52.screen[i].getChar());
                     char ch = planes.getChar(i);
                     byte byteCh = (byte) ch;
@@ -1181,7 +1178,7 @@ public final class tnvt implements Runnable {
 
         int cp = screen52.getCurrentPos(); // save off current position
         // fix below submitted by Mitch Blevins
-        //int cp = screen52.getScreenFields().getCurrentFieldPos();
+        // int cp = screen52.getScreenFields().getCurrentFieldPos();
         // save off current position
         sc.write((byte) (cp >> 8 & 0xff));
         sc.write((byte) (cp & 0xff));
@@ -1286,7 +1283,7 @@ public final class tnvt implements Runnable {
                         la = b;
 
                     } else {
-                        //LDC - 12/02/2003 - Check to see if it is an displayable
+                        // LDC - 12/02/2003 - Check to see if it is an displayable
                         // character. If not,
                         //  do not convert the character.
                         //  The characters on screen are in unicode
@@ -1328,7 +1325,8 @@ public final class tnvt implements Runnable {
                     fcw1 = bk.getNextByte();
                     fcw2 = bk.getNextByte();
 
-                    sf = screen52.getScreenFields().setField(attr, screen52.getRow(fPos), screen52.getCol(fPos), fLen, ffw1, ffw2, fcw1, fcw2);
+                    sf = screen52.getScreenFields()
+                            .setField(attr, screen52.getRow(fPos), screen52.getCol(fPos), fLen, ffw1, ffw2, fcw1, fcw2);
 
                     while (fLen-- > 0) {
 
@@ -1459,7 +1457,7 @@ public final class tnvt implements Runnable {
                         screen52.clearTable();
                         break;
 
-                    case CMD_READ_INPUT_FIELDS: //0x42 66 read input fields
+                    case CMD_READ_INPUT_FIELDS: // 0x42 66 read input fields
                     case CMD_READ_MDT_FIELDS: // 0x52 82 read MDT Fields
                         bk.getNextByte();
                         bk.getNextByte();
@@ -1507,8 +1505,8 @@ public final class tnvt implements Runnable {
     /**
      * This routine handles sending negative responses back to the host.
      * <p>
-     * You can find a description of the types of responses to be sent back by
-     * looking at section 12.4 of the 5250 Functions Reference manual
+     * You can find a description of the types of responses to be sent back by looking at section 12.4 of the 5250
+     * Functions Reference manual
      *
      * @param cat
      * @param modifier
@@ -1703,7 +1701,7 @@ public final class tnvt implements Runnable {
                     case -1: // 0xFF Begin Graphics Order
                         processGraphicsData();
                         break;
-                    case -128: //STRPCCMD
+                    case -128: // STRPCCMD
                         //          if (screen52.getCurrentPos() == 82) {
                         log.debug("STRPCCMD got a -128 command at " + screen52.getCurrentPos());
                         StringBuilder value = new StringBuilder();
@@ -1793,21 +1791,21 @@ public final class tnvt implements Runnable {
         } else {
             if (!screen52.isStatusErrorCode()) {
                 if (!isDataEBCDIC(byte0)) {
-                    //                           if (byte0 == 255) {
-                    //                              sendNegResponse(NR_REQUEST_ERROR,0x05,0x01,0x42,
-                    //                              " Attempt to send FF to screen");
-                    //                           }
-                    //                           else
+                    // if (byte0 == 255) {
+                    //    sendNegResponse(NR_REQUEST_ERROR,0x05,0x01,0x42,
+                    //    " Attempt to send FF to screen");
+                    // }
+                    // else
                     screen52.setChar(byte0);
                 } else
-                    //LDC - 13/02/2003 - Convert it to unicode
-                    //screen52.setChar(getASCIIChar(byte0));
+                    // LDC - 13/02/2003 - Convert it to unicode
+                    // screen52.setChar(getASCIIChar(byte0));
                     setCharFromBuffer(byte0);
             } else {
                 if (byte0 == 0) screen52.setChar(byte0);
                 else
-                    //LDC - 13/02/2003 - Convert it to unicode
-                    //screen52.setChar(getASCIIChar(byte0));
+                    // LDC - 13/02/2003 - Convert it to unicode
+                    // screen52.setChar(getASCIIChar(byte0));
                     setCharFromBuffer(byte0);
             }
         }
@@ -1923,9 +1921,9 @@ public final class tnvt implements Runnable {
                 screen52.clearScreen();
             else {
                 if (repeat != 0) {
-                    //LDC - 13/02/2003 - convert it to unicode
+                    // LDC - 13/02/2003 - convert it to unicode
                     repeat = codePage.ebcdic2uni(repeat);
-                    //repeat = getASCIIChar(repeat);
+                    // repeat = getASCIIChar(repeat);
                 }
 
                 int times = ((toRow * screen52.getColumns()) + toCol) - ((row * screen52.getColumns()) + col);
@@ -2146,14 +2144,11 @@ public final class tnvt implements Runnable {
     /**
      * Method sendQueryResponse
      * <p>
-     * The query command is used to obtain information about the capabilities of
-     * the 5250 display.
+     * The query command is used to obtain information about the capabilities of the 5250 display.
      * <p>
-     * The Query command must follow an Escape (0x04) and Write Structured Field
-     * command (0xF3).
+     * The Query command must follow an Escape (0x04) and Write Structured Field command (0xF3).
      * <p>
-     * This section is modeled after the rfc1205 - 5250 Telnet Interface section
-     * 5.3
+     * This section is modeled after the rfc1205 - 5250 Telnet Interface section 5.3
      *
      * @throws IOException
      */
@@ -2385,12 +2380,12 @@ public final class tnvt implements Runnable {
                             baosp.write(SB);
                             baosp.write(TERMINAL_TYPE);
                             baosp.write(QUAL_IS);
-//                            baosp.write("IBM-3486-BA".getBytes());
+                            //                            baosp.write("IBM-3486-BA".getBytes());
                             baosp.write("IBM-5292-2".getBytes());
-//                            if (!support132)
-//                                baosp.write("IBM-3179-2".getBytes());
-//                            else
-//                                baosp.write("IBM-3477-FC".getBytes());
+                            //                            if (!support132)
+                            //                                baosp.write("IBM-3179-2".getBytes());
+                            //                            else
+                            //                                baosp.write("IBM-3477-FC".getBytes());
                             baosp.write(IAC);
                             baosp.write(SE);
                             writeByte(baosp.toByteArray());
@@ -2504,10 +2499,9 @@ public final class tnvt implements Runnable {
     }
 
     /**
-     * This will negotiate a device name with controller. if the sequence is
-     * less than zero then it will send the device name as specified. On each
-     * unsuccessful attempt a sequential number is appended until we find one or
-     * the controller says no way.
+     * This will negotiate a device name with controller. if the sequence is less than zero then it will send the device
+     * name as specified. On each unsuccessful attempt a sequential number is appended until we find one or the
+     * controller says no way.
      *
      * @return String
      */

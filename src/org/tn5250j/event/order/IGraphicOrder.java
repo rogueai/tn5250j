@@ -7,8 +7,8 @@ public interface IGraphicOrder {
     /**
      * Enum for order codes. Values can be derived from unsigned bytes with {{@link #fromByte(int)}}
      * <p></p>
-     * Note that in Java, bytes are represented internally as signed int in the range [-128, +127]
-     * Order values are instead unsigned bytes [0, 255]
+     * Note that in Java, bytes are represented internally as signed int in the range [-128, +127] Order values are
+     * instead unsigned bytes [0, 255]
      */
     public enum OrderCode {
         // Invalid Orders: 0b00aa_aaaa
@@ -68,23 +68,23 @@ public interface IGraphicOrder {
         public final int dataLength;
 
         /**
-         * Graphic Command accepting multiple data chunks: variable length data orders allow for multiple blocks spanning
-         * and must be terminated by an {@link #EndOfData}}order 0x92.
+         * Graphic Command accepting multiple data chunks: variable length data orders allow for multiple blocks
+         * spanning and must be terminated by an {@link #EndOfData}}order 0x92.
          * <p>
-         * Some graphic orders are only considered valid if data length is: n * dataLength + 1 (taking into account 0x92).
-         * For instance, {@link #DrawPolyline} can only be performed on 4-byte chunks.
+         * Some graphic orders are only considered valid if data length is: n * dataLength + 1 (taking into account
+         * 0x92). For instance, {@link #DrawPolyline} can only be performed on 4-byte chunks.
          * <p>
-         * Note that this rule is not applicable to all graphic order though:
-         * some orders would accept a #{@link #dataLength}-bytes definition, plus an indefinite number of trailing bytes up
-         * till reaching {@link #EndOfData}.
+         * Note that this rule is not applicable to all graphic order though: some orders would accept a
+         * #{@link #dataLength}-bytes definition, plus an indefinite number of trailing bytes up till reaching
+         * {@link #EndOfData}.
          * <p>
-         * Incomplete variable data orders can occur: as a graphic message can have a maximum size of 256 bytes, variable
-         * data orders can be split across multiple messages via the {@link #MoreDataToCome} (0x91) order.
+         * Incomplete variable data orders can occur: as a graphic message can have a maximum size of 256 bytes,
+         * variable data orders can be split across multiple messages via the {@link #MoreDataToCome} (0x91) order.
          */
         public final boolean variableLength;
 
         OrderCode(byte code, int dataLength, boolean variableLength) {
-            //            in Java, bytes are represented internally as signed int
+            // in Java, bytes are represented internally as signed int
             this.code = code;
             this.dataLength = dataLength;
             this.variableLength = variableLength;
